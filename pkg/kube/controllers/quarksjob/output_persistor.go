@@ -155,7 +155,7 @@ func (po *OutputPersistor) persistContainer(
 							errorContainerChannel <- err
 						}
 
-						if err := po.createSecret(ctx, qJob, container, secretName, secretData, map[string]string{}, options.Versioned); err != nil {
+						if err := po.createSecret(ctx, qJob, container, secretName, secretData, options.AdditionalSecretLabels, options.Versioned); err != nil {
 							errorContainerChannel <- err
 						}
 					}
