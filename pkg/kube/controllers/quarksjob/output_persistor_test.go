@@ -94,15 +94,12 @@ var _ = Describe("OutputPersistor", func() {
 
 			Context("when output persistence is configured", func() {
 				BeforeEach(func() {
-					additionalLabels := map[string]string{
-						"quarks.cloudfoundry.org/entanglement": "foo-busybox",
-					}
 					qJob.Spec.Output = &qjv1a1.Output{
 						SecretLabels: map[string]string{
 							"key": "value",
 						},
 						OutputMap: qjv1a1.OutputMap{
-							"busybox": qjv1a1.NewFileToSecret("output.json", "foo-busybox", false, additionalLabels),
+							"busybox": qjv1a1.NewFileToSecret("output.json", "foo-busybox", false),
 						},
 					}
 				})
@@ -139,9 +136,6 @@ var _ = Describe("OutputPersistor", func() {
 			})
 
 			Context("when versioned output is enabled", func() {
-				additionalLabels := map[string]string{
-					"quarks.cloudfoundry.org/entanglement": "foo-busybox",
-				}
 				BeforeEach(func() {
 					qJob.Spec.Output = &qjv1a1.Output{
 						SecretLabels: map[string]string{
@@ -151,9 +145,8 @@ var _ = Describe("OutputPersistor", func() {
 						OutputMap: qjv1a1.OutputMap{
 							"busybox": qjv1a1.FilesToSecrets{
 								"output.json": qjv1a1.SecretOptions{
-									Name:                   "foo-busybox",
-									Versioned:              true,
-									AdditionalSecretLabels: additionalLabels,
+									Name:      "foo-busybox",
+									Versioned: true,
 								},
 							},
 						},
@@ -293,7 +286,7 @@ var _ = Describe("OutputPersistor", func() {
 				BeforeEach(func() {
 					qJob.Spec.Output = &qjv1a1.Output{
 						OutputMap: qjv1a1.OutputMap{
-							"busybox": qjv1a1.NewFileToSecrets("provides.json", "link-nats-deployment", false, map[string]string{}),
+							"busybox": qjv1a1.NewFileToSecrets("provides.json", "link-nats-deployment", false),
 						},
 					}
 

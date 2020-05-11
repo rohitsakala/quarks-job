@@ -176,26 +176,24 @@ func IsMonitoredNamespace(n *corev1.Namespace, id string) bool {
 }
 
 // NewFileToSecret returns a FilesToSecrets with just one mapping
-func NewFileToSecret(fileName string, secretName string, versioned bool, additionalLabels map[string]string) FilesToSecrets {
+func NewFileToSecret(fileName string, secretName string, versioned bool) FilesToSecrets {
 	return FilesToSecrets{
 		fileName: SecretOptions{
-			Name:                   secretName,
-			Versioned:              versioned,
-			PersistenceMethod:      PersistOneToOne,
-			AdditionalSecretLabels: additionalLabels,
+			Name:              secretName,
+			Versioned:         versioned,
+			PersistenceMethod: PersistOneToOne,
 		},
 	}
 }
 
 // NewFileToSecrets uses a fan out style and creates one secret per key/value
 // pair in the given input file
-func NewFileToSecrets(fileName string, secretName string, versioned bool, additionalLabels map[string]string) FilesToSecrets {
+func NewFileToSecrets(fileName string, secretName string, versioned bool) FilesToSecrets {
 	return FilesToSecrets{
 		fileName: SecretOptions{
-			Name:                   secretName,
-			Versioned:              versioned,
-			PersistenceMethod:      PersistUsingFanOut,
-			AdditionalSecretLabels: additionalLabels,
+			Name:              secretName,
+			Versioned:         versioned,
+			PersistenceMethod: PersistUsingFanOut,
 		},
 	}
 }
