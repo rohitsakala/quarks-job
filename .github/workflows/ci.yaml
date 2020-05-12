@@ -1,0 +1,103 @@
+name: quarks-job-ci
+
+on: [push]
+            
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+   
+    steps:
+    - name: Set up Go 1.13.4
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.13.4
+    - uses: actions/checkout@v2
+    - name: lint
+      run: |
+        curl -LO https://github.com/dominikh/go-tools/releases/download/2020.1.3/staticcheck_linux_amd64.tar.gz
+        sudo tar xfz staticcheck_linux_amd64.tar.gz --strip-component 1 -C $GOPATH/bin staticcheck/staticcheck
+        go get -u golang.org/x/lint/golint
+        make lint
+
+  unit-tests:
+    needs: [lint]
+    runs-on: ubuntu-latest
+          
+    steps:
+    - name: Set up Go 1.13.4
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.13.4
+    - uses: actions/checkout@v2
+    - name: Install Go dependencies
+      run: |
+        go install github.com/onsi/ginkgo/ginkgo
+        go get github.com/mattn/goveralls
+        go get github.com/modocache/gover
+    - name: Run unit tests
+      run: |
+        make test-unit
+        make coverage
+      env:
+        COVERAGE: true
+        COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        GOPROXY: "https://proxy.golang.org"
+    
+  cluster-tests:
+    needs: [unit-tests]
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        kubernetes_version: [v1.14.10,v1.15.7,v1.16.4,v1.17.0,v1.18.0]
+    
+    steps:
+    - name: Set up Go 1.13.4
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.13.4
+    - uses: actions/checkout@v2 
+    - name: Install Go dependencies
+      run: |
+        go install github.com/onsi/ginkgo/ginkgo
+        go get github.com/mattn/goveralls
+        go get github.com/modocache/gover
+    - name: Prepare GITHUB_ACTION_BRANCH env
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: prepare_branch_env
+    - name: Create k8s Kind Cluster
+      uses: engineerd/setup-kind@v0.3.0
+      with:
+       version: v0.8.0
+       image: kindest/node:${{matrix.kubernetes_version}}
+    - name: Run cluster tests
+      run: |
+        USE_KIND=true make test-cluster
+        make coverage
+      env:
+        GITHUB_ACTION_BRANCH: ${{ steps.prepare_branch_env.outputs.branch }}
+        COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        COVERAGE: true
+        GOPROXY: "https://proxy.golang.org"
+        
+  publish:
+    needs: [cluster-tests]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: azure/setup-helm@v1
+      with:
+        version: v3.0.0
+    - uses: actions/checkout@v2
+    - name: Prepare GITHUB_ACTION_BRANCH env
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: prepare_branch_env
+    - name: Publish Helm Chart
+      run: bash ./bin/deploy
+      env:
+        GITHUB_ACTION_BRANCH: ${{ steps.prepare_branch_env.outputs.branch }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_USERNAME: cfcontainerization
+        GOPROXY: "https://proxy.golang.org"

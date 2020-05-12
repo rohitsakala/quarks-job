@@ -1,39 +1,7 @@
-language: go
-
-go:
-- '1.13.4'
 
 cache:
   directories:
     - $GOPATH/pkg/mod
-
-services:
-- docker
-
-env:
-  global:
-    - GOPROXY="https://proxy.golang.org"
-    - COVERAGE=true
-    # for Helm
-    - DESIRED_VERSION="v3.1.0"
-  jobs:
-    - KUBE=1.14.10
-    - KUBE=1.15.7
-    - KUBE=1.16.4
-    - KUBE=1.17.0
-    - KUBE=1.18.0
-
-stages:
-  - lint
-  - unit
-  - test
-
-install:
-  # Download go dev dependencies
-  - export PATH=$PATH:$GOPATH/bin
-  - go install github.com/onsi/ginkgo/ginkgo
-  - go get github.com/mattn/goveralls
-  - go get github.com/modocache/gover
 
 # Avoid too many builds.
 # Otherwise opening a PR from a local branch would trigger two builds.
