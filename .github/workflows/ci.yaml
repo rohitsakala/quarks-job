@@ -98,7 +98,9 @@ jobs:
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
       id: prepare_branch_env
     - name: Publish Helm Chart
-      run: bash ./bin/deploy
+      run: |
+        git fetch --unshallow
+        bash ./bin/deploy
       env:
         GITHUB_ACTION_BRANCH: ${{ steps.prepare_branch_env.outputs.branch }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
