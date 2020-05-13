@@ -5,6 +5,7 @@ GITHUB_SHA=${GITHUB_SHA-}
 COMMIT_NUMBER=$(git rev-list --first-parent --count HEAD)
 
 echo $GITHUB_ACTION_BRANCH
+echo $GITHUB_REF
 echo $GITHUB_SHA
 
 # https://semver.org/#semantic-versioning-200
