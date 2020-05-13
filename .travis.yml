@@ -3,10 +3,6 @@ cache:
   directories:
     - $GOPATH/pkg/mod
 
-# Avoid too many builds.
-# Otherwise opening a PR from a local branch would trigger two builds.
-if: tag IS blank AND (type = push OR (type = pull_request AND head_repo != repo))
-
 before_script:
   # Download and install kubectl
   - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
